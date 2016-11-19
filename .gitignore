@@ -1,0 +1,4 @@
+__pycache__/
+**spike.py
+*.sqlite*
+.idea/

@@ -1,0 +1,21 @@
+@set Veebot=!no_command
+@lock/interact Veebot==*Veebot
+@lock/use Veebot=!POWER^GUEST
+
+&CMD_STATS Veebot=$+dex/stats *:think \{ "command": "stats", "callback": %#, "input": "[u(Fun_Sanitize_Partial_Pokemon_Name, %0)]" \}
+&FUN_SANITIZE_PARTIAL_POKEMON_NAME  Veebot=regeditalli(%0, get(me/Fun_Regexp_For_Pokemon_Names),)
+&FUN_REGEXP_FOR_POKEMON_NAMES  Veebot=[^-\d\w ]
+
+&CMD_+DEX-MOVE Veebot=$+dex/move *:think \{ "command": "move", "callback": %#, "input": "[u(Fun_Sanitize_Partial_Move_Name, %0)]" \}
+&FUN_SANITIZE_PARTIAL_MOVE_NAME  Veebot=regeditalli(%0, get(me/Fun_Regexp_For_Move_Names), )
+&FUN_REGEXP_FOR_MOVE_NAMES  Veebot=[^-\d\w ]
+
+
+&INC_AMBIGUOUS_POKEMON  Veebot=@nspemit %0=Multiple matches found for '%1':%r[iter(%2, %b%b%i0, |, %r)]
+
+
+&INC_AMBIGUOUS_MOVE  Veebot=@nspemit %0=Multiple matches found for '%1':%r[iter(%2, %b%b%i0, |, %r)]
+
+&INC_SHOW_MOVE  Veebot=@nspemit %0=Move '[first(%2, |)]': [rest(%2, |)]
+
+&INC_NO_MOVE  Veebot=@nspemit %0=No move found matching '%1'.

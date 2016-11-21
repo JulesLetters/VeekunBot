@@ -11,6 +11,7 @@ class SqlParser(threading.Thread):
         self.sql_connection = None
         self.cursor = None
         super().__init__()
+        self.setName("SQL Parser")
         self.start()
 
     def close(self):
@@ -55,6 +56,47 @@ class SqlParser(threading.Thread):
         like_name = "%%%s%%" % partial_name
         for name in (partial_name, like_name):
             self.cursor.execute("SELECT id, identifier FROM pokemon WHERE identifier LIKE ?", (name,))
+            rows = self.cursor.fetchall()
+            if len(rows) > 0:
+                return rows
+        return []
+
+    def query_for_move(self, callback_dbnum, partial_name):
+        self.queue.put((0, "_fetch_move", [callback_dbnum, partial_name]))
+
+    def _fetch_move(self, callback_dbnum, partial_name):
+        fetched_move = self._match_move_name(partial_name)
+
+        if len(fetched_move) == 0:
+            self.mu_listener.move_not_found(callback_dbnum, partial_name)
+        elif len(fetched_move) > 1:
+            names = [move[1] for move in fetched_move]
+            self.mu_listener.move_ambiguous_name(callback_dbnum, partial_name, names)
+        else:
+            move_id = fetched_move[0][0]
+            move_query = '''SELECT mn.name, t.identifier, mdc.identifier, m.power, m.pp, m.accuracy, m.priority
+                    FROM languages AS l, move_names AS mn, moves AS m, move_damage_classes AS mdc, types AS t
+                    WHERE l.identifier == "en"
+                    AND m.id == ?
+                    AND mn.move_id == m.id
+                    AND mn.local_language_id == l.id
+                    AND m.damage_class_id == mdc.id
+                    AND t.id == m.type_id'''
+            self.cursor.execute(move_query, (move_id,))
+            move_row = self.cursor.fetchone()
+            self.mu_listener.move_success(callback_dbnum, partial_name, move_row)
+
+    def _match_move_name(self, partial_name):
+        match_move_name_query = '''SELECT m.id, mn.name
+                FROM languages AS l, move_names AS mn, moves AS m
+                WHERE l.identifier == "en"
+                AND mn.local_language_id == l.id
+                AND mn.name LIKE ?
+                AND mn.move_id == m.id'''
+
+        like_name = "%%%s%%" % partial_name
+        for match_style in (partial_name, like_name):
+            self.cursor.execute(match_move_name_query, (match_style,))
             rows = self.cursor.fetchall()
             if len(rows) > 0:
                 return rows

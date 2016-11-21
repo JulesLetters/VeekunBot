@@ -44,6 +44,19 @@ class Communicator:
     def stats_success(self, callback_dbnum, partial_name, pokemon_name, stats):
         self.mu_parser.do_stats_success(callback_dbnum, partial_name, pokemon_name, stats)
 
+    def query_for_move(self, callback_dbnum, partial_name):
+        self.sql_parser.query_for_move(callback_dbnum, partial_name)
+
+    def move_not_found(self, callback_dbnum, partial_name):
+        self.mu_parser.do_move_not_found(callback_dbnum, partial_name)
+
+    def move_ambiguous_name(self, callback_dbnum, partial_name, names):
+        self.mu_parser.do_move_ambigious_name(callback_dbnum, partial_name, names)
+
+    def move_success(self, callback_dbnum, partial_name, move_row):
+        self.mu_parser.do_move_success(callback_dbnum, partial_name, move_row)
+
+
 
 def main():
     import sys

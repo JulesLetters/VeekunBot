@@ -8,7 +8,7 @@ class MuLineReader:
 
     def connect(self, server, port):
         print("Connecting to MU: %s:%s" % (server, port))
-        t = threading.Thread(target=self.__read_from_telnet, args=(server, port))
+        t = threading.Thread(target=self._read_from_telnet, args=(server, port))
         t.start()
 
     def disconnect(self):
@@ -18,7 +18,7 @@ class MuLineReader:
     def send_line(self, message):
         self.telnet.write(message.encode('utf-8') + b"\n")
 
-    def __read_from_telnet(self, server, port):
+    def _read_from_telnet(self, server, port):
         self.telnet = Telnet(server, port)
         self.listener.handle_connect(server, port)
 
